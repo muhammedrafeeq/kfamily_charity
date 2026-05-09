@@ -206,4 +206,18 @@ class ContributionService {
       throw DatabaseException('Failed to load pending contributions: $e');
     }
   }
+
+  Future<List<PaymentContribution>> getRecentApprovedPayments({int limit = 10}) async {
+    try {
+      final data = await _client
+          .from(SupabaseConstants.contributionsTable)
+          .select('*, member:profiles!payment_contributions_member_id_fkey(*)')
+          .eq('status', 'approved')
+          .order('reviewed_at', ascending: false)
+          .limit(limit);
+      return data.map((e) => PaymentContribution.fromJson(e)).toList();
+    } catch (e) {
+      throw DatabaseException('Failed to load recent payments: $e');
+    }
+  }
 }

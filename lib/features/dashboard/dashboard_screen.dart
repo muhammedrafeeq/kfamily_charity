@@ -86,6 +86,10 @@ class DashboardScreen extends ConsumerWidget {
 
                   const SizedBox(height: 16),
 
+                  const _RecentPaymentsTicker(),
+
+                  const SizedBox(height: 16),
+
                   // Payment window banner
                   if (DateTime.now().day <= 10) ...[
                     _PaymentWindowBanner(),
@@ -725,6 +729,115 @@ class _ShortcutTile extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _RecentPaymentsTicker extends ConsumerStatefulWidget {
+  const _RecentPaymentsTicker();
+
+  @override
+  ConsumerState<_RecentPaymentsTicker> createState() => _RecentPaymentsTickerState();
+}
+
+class _RecentPaymentsTickerState extends ConsumerState<_RecentPaymentsTicker> {
+  int _currentIndex = 0;
+  late final Stream<int> _timerStream;
+
+  @override
+  void initState() {
+    super.initState();
+    _timerStream = Stream.periodic(const Duration(seconds: 4), (i) => i);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final recentAsync = ref.watch(recentApprovedPaymentsProvider);
+
+    return recentAsync.when(
+      data: (payments) {
+        if (payments.isEmpty) return const SizedBox.shrink();
+
+        return StreamBuilder<int>(
+          stream: _timerStream,
+          builder: (context, snapshot) {
+            if (payments.isNotEmpty) {
+              _currentIndex = (snapshot.data ?? 0) % payments.length;
+            }
+            final payment = payments[_currentIndex];
+            final memberName = payment.member?.fullName ?? 'Someone';
+
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.04),
+                borderRadius: const BorderRadius.all(Radius.circular(16)),
+                border: Border.all(color: AppColors.primary.withValues(alpha: 0.08)),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: AppColors.statusApproved.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.check_circle_rounded,
+                        color: AppColors.statusApproved, size: 16),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 500),
+                      transitionBuilder: (child, animation) {
+                        return FadeTransition(
+                          opacity: animation,
+                          child: SlideTransition(
+                            position: Tween<Offset>(
+                              begin: const Offset(0, 0.2),
+                              end: Offset.zero,
+                            ).animate(animation),
+                            child: child,
+                          ),
+                        );
+                      },
+                      child: Column(
+                        key: ValueKey<int>(_currentIndex),
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          RichText(
+                            text: TextSpan(
+                              style: const TextStyle(color: AppColors.textPrimary, fontSize: 13),
+                              children: [
+                                TextSpan(text: memberName,
+                                    style: const TextStyle(fontWeight: FontWeight.w700)),
+                                const TextSpan(text: ' just contributed '),
+                                TextSpan(text: payment.amount.toCurrency(),
+                                    style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.statusApproved)),
+                              ],
+                            ),
+                          ),
+                          Text(
+                            DateFormat('MMM d, h:mm a').format(
+                              payment.reviewedAt?.toLocal() ?? 
+                              payment.submittedAt?.toLocal() ?? 
+                              payment.createdAt.toLocal()
+                            ),
+                            style: const TextStyle(color: AppColors.textHint, fontSize: 10),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
     );
   }
 }

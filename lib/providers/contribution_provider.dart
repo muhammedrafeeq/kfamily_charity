@@ -30,6 +30,10 @@ final pendingContributionsProvider =
   return ref.read(contributionServiceProvider).getPendingContributions(cycleId);
 });
 
+final recentApprovedPaymentsProvider = FutureProvider<List<PaymentContribution>>((ref) async {
+  return ref.read(contributionServiceProvider).getRecentApprovedPayments();
+});
+
 final contributionSubscriptionProvider = Provider.family<void, String>((ref, cycleId) {
   final channel = SupabaseService.client
       .channel('${SupabaseConstants.contributionsChannel}:$cycleId')
@@ -47,6 +51,7 @@ final contributionSubscriptionProvider = Provider.family<void, String>((ref, cyc
           ref.invalidate(myContributionProvider);
           ref.invalidate(monthlyTrendsProvider);
           ref.invalidate(totalCollectionsProvider);
+          ref.invalidate(recentApprovedPaymentsProvider);
         },
       )
       .subscribe();

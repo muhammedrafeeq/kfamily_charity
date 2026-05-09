@@ -1,0 +1,32 @@
+class AppStrings {
+  static const String appName = 'KFamily Charity';
+  static const String login = 'Sign In';
+  static const String logout = 'Sign Out';
+  static const String phone = 'Phone Number';
+  static const String password = 'Password';
+  static const String forgotPassword = 'Forgot Password?';
+  static const String dashboard = 'Dashboard';
+  static const String payments = 'Payments';
+  static const String reports = 'Reports';
+  static const String members = 'Members';
+  static const String notifications = 'Notifications';
+  static const String settings = 'Settings';
+  static const String approve = 'Approve';
+  static const String reject = 'Reject';
+  static const String submit = 'Submit Payment';
+  static const String pending = 'Pending';
+  static const String submitted = 'Submitted';
+  static const String approved = 'Approved';
+  static const String rejected = 'Rejected';
+  static const String totalCollected = 'Total Collected';
+  static const String monthlyTrends = 'Monthly Trends';
+  static const String memberHistory = 'Member History';
+  static const String yearlySummary = 'Yearly Summary';
+  static const String pendingReport = 'Pending Report';
+  static const String openCycle = 'Open New Cycle';
+  static const String closeCycle = 'Close Cycle';
+  static const String addMember = 'Add Member';
+  static const String exportCsv = 'Export CSV';
+  static const String noData = 'No data available';
+  static const String loadingError = 'Something went wrong. Please try again.';
+}

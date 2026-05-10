@@ -64,11 +64,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     final screenHeight = view.display.size.height / view.devicePixelRatio;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface, // Match the bottom area to prevent gaps
+      resizeToAvoidBottomInset: false, // Keep background fixed
       body: Stack(
         children: [
-          // Gradient background - Covers everything
-          Positioned.fill(
+          // Gradient background - Covers the top half
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: MediaQuery.sizeOf(context).height * 0.7,
             child: Container(
               decoration: const BoxDecoration(gradient: AppColors.heroGradient),
             ),

@@ -9,16 +9,24 @@ class AuthService {
 
   Stream<AuthState> get authStateChanges => _auth.onAuthStateChange;
 
-  String _phoneToEmail(String phone) => '${phone.replaceAll(RegExp(r'\D'), '')}@kfamily.local';
+  String _phoneToEmail(String phone) {
+    // Standardize: Remove all non-digits to ensure consistency
+    final cleanPhone = phone.replaceAll(RegExp(r'\D'), '');
+    return '$cleanPhone@kfamily.local';
+  }
 
   Future<void> signIn({required String phone, required String password}) async {
     try {
-      final identifier = phone.contains('@') ? phone : _phoneToEmail(phone);
+      final identifier = phone.contains('@') ? phone.trim() : _phoneToEmail(phone.trim());
       await _auth.signInWithPassword(
         email: identifier,
         password: password,
       );
     } catch (e) {
+      // Provide a friendlier error for login failures
+      if (e.toString().contains('Invalid login credentials')) {
+        throw AppAuthException('Incorrect phone number or 4-digit key.');
+      }
       throw AppAuthException(e.toString());
     }
   }

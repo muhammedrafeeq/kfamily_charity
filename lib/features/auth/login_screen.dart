@@ -65,28 +65,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      resizeToAvoidBottomInset: true,
       body: Stack(
         children: [
-          // Gradient background
-          Container(
-            height: screenHeight,
-            decoration: const BoxDecoration(gradient: AppColors.heroGradient),
-          ),
-          // Bottom white curve
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: screenHeight * 0.52,
+          // Gradient background - Covers everything
+          Positioned.fill(
             child: Container(
-              decoration: const BoxDecoration(
-                color: AppColors.background,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(36)),
-              ),
+              decoration: const BoxDecoration(gradient: AppColors.heroGradient),
             ),
           ),
-          // Decorative circles
+          // Decorative circles - Pinned to the background
           Positioned(
             top: -60,
             right: -60,
@@ -118,73 +105,80 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
               child: SlideTransition(
                 position: _slideAnim,
                 child: SingleChildScrollView(
+                  physics: const ClampingScrollPhysics(),
                   padding: const EdgeInsets.symmetric(horizontal: 28),
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 48),
-                      // Logo
-                      Container(
-                        width: 80,
-                        height: 80,
-                        decoration: BoxDecoration(
-                          gradient: AppColors.accentGradient,
-                          borderRadius: BorderRadius.circular(24),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.accent.withValues(alpha: 0.4),
-                              blurRadius: 24,
-                              offset: const Offset(0, 8),
-                            ),
-                          ],
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: MediaQuery.sizeOf(context).height - 
+                          MediaQuery.paddingOf(context).vertical,
+                    ),
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 48),
+                        // Logo
+                        Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            gradient: AppColors.accentGradient,
+                            borderRadius: BorderRadius.circular(24),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.accent.withValues(alpha: 0.4),
+                                blurRadius: 24,
+                                offset: const Offset(0, 8),
+                              ),
+                            ],
+                          ),
+                          child: const Icon(Icons.volunteer_activism_rounded,
+                              size: 40, color: Colors.white),
                         ),
-                        child: const Icon(Icons.volunteer_activism_rounded,
-                            size: 40, color: Colors.white),
-                      ),
-                      const SizedBox(height: 20),
-                      Text(
-                        AppStrings.appName,
-                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
+                        const SizedBox(height: 20),
+                        Text(
+                          AppStrings.appName,
+                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        'Family Charity Fund',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppColors.textOnDarkSub,
-                          letterSpacing: 0.5,
+                        const SizedBox(height: 6),
+                        Text(
+                          'Family Charity Fund',
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: AppColors.textOnDarkSub,
+                            letterSpacing: 0.5,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 48),
-
-                      // Card
-                      Container(
-                        padding: const EdgeInsets.all(28),
-                        decoration: const BoxDecoration(
-                          color: AppColors.surface,
-                          borderRadius: BorderRadius.all(Radius.circular(28)),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.cardShadow,
-                              blurRadius: 40,
-                              offset: Offset(0, 12),
-                            ),
-                          ],
-                        ),
-                        child: Form(
-                          key: _formKey,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Text('Welcome back',
-                                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                    fontWeight: FontWeight.w700,
-                                  )),
-                              const SizedBox(height: 4),
-                              Text('Sign in using your phone number and 4-digit key',
-                                  style: Theme.of(context).textTheme.bodySmall),
-                              const SizedBox(height: 24),
+                        const SizedBox(height: 48),
+                        // Login Card
+                        Container(
+                          padding: const EdgeInsets.all(28),
+                          margin: const EdgeInsets.only(bottom: 40),
+                          decoration: const BoxDecoration(
+                            color: AppColors.surface,
+                            borderRadius: BorderRadius.all(Radius.circular(28)),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.cardShadow,
+                                blurRadius: 40,
+                                offset: Offset(0, 12),
+                              ),
+                            ],
+                          ),
+                          child: Form(
+                            key: _formKey,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Text('Welcome back',
+                                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                      fontWeight: FontWeight.w700,
+                                    )),
+                                const SizedBox(height: 4),
+                                Text('Sign in using your phone number and 4-digit key',
+                                    style: Theme.of(context).textTheme.bodySmall),
+                                const SizedBox(height: 24),
+                                // ... rest of form fields ...
 
                               if (_error != null) ...[
                                 Container(

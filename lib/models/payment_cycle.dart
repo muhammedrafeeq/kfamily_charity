@@ -17,6 +17,7 @@ class PaymentCycle with _$PaymentCycle {
     String? createdBy,
     required DateTime createdAt,
     DateTime? closedAt,
+    DateTime? endDate,
   }) = _PaymentCycle;
 
   factory PaymentCycle.fromJson(Map<String, dynamic> json) =>
@@ -26,7 +27,10 @@ class PaymentCycle with _$PaymentCycle {
   bool get isOpen => status == 'open';
 
   bool get isWithinPaymentWindow {
+    if (!isOpen) return false;
     final now = DateTime.now();
-    return now.year == year && now.month == month && now.day >= 1 && now.day <= 10;
+    // Use endDate if available, otherwise default to 10th of the cycle month
+    final deadline = endDate ?? DateTime(year, month, 10, 23, 59, 59);
+    return now.isBefore(deadline.add(const Duration(days: 1)));
   }
 }

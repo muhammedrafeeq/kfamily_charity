@@ -1,0 +1,11 @@
+{
+  "public": true,
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ],
+  "outputDirectory": "build/web",
+  "cleanUrls": true
+}

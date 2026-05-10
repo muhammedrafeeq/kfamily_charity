@@ -38,12 +38,14 @@ class ProfileService {
     String? fullName,
     String? phone,
     String? avatarUrl,
+    String? role,
   }) async {
     try {
       final updates = <String, dynamic>{};
       if (fullName != null) updates['full_name'] = fullName;
       if (phone != null) updates['phone'] = phone;
       if (avatarUrl != null) updates['avatar_url'] = avatarUrl;
+      if (role != null) updates['role'] = role;
 
       final data = await _client
           .from(SupabaseConstants.profilesTable)

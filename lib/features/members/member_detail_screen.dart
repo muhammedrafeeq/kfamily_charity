@@ -95,66 +95,15 @@ class _MemberDetailScreenState extends ConsumerState<MemberDetailScreen> {
         slivers: [
           SliverAppBar(
             pinned: true,
-            expandedHeight: 200,
-            backgroundColor: Colors.transparent,
-            flexibleSpace: FlexibleSpaceBar(
-              collapseMode: CollapseMode.pin,
-              background: Container(
-                decoration: const BoxDecoration(gradient: AppColors.heroGradient),
-                child: SafeArea(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const SizedBox(height: 20),
-                      Container(
-                        width: 72,
-                        height: 72,
-                        decoration: BoxDecoration(
-                          gradient: AppColors.accentGradient,
-                          borderRadius: const BorderRadius.all(Radius.circular(22)),
-                          boxShadow: [BoxShadow(
-                            color: AppColors.accent.withValues(alpha: 0.4),
-                            blurRadius: 16, offset: const Offset(0, 6))],
-                        ),
-                        child: Center(
-                          child: Text(initials,
-                              style: const TextStyle(color: Colors.white,
-                                  fontWeight: FontWeight.w800, fontSize: 28)),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(p?.fullName ?? 'Member',
-                          style: const TextStyle(color: Colors.white,
-                              fontWeight: FontWeight.w700, fontSize: 18)),
-                      const SizedBox(height: 4),
-                      if (p != null)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: AppColors.accent.withValues(alpha: 0.2),
-                            borderRadius: const BorderRadius.all(Radius.circular(20)),
-                          ),
-                          child: Text(
-                            'Member #${p.memberNumber}  •  ${p.role.toUpperCase()}',
-                            style: const TextStyle(
-                                color: AppColors.accent, fontSize: 11,
-                                fontWeight: FontWeight.w700, letterSpacing: 1),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-              title: Text(p?.fullName ?? 'Member',
-                  style: const TextStyle(color: Colors.white, fontSize: 17,
-                      fontWeight: FontWeight.w600)),
-              titlePadding: const EdgeInsetsDirectional.fromSTEB(72, 0, 60, 16),
-            ),
+            expandedHeight: 220,
+            backgroundColor: AppColors.primary,
             leading: IconButton(
               icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
               onPressed: () => Navigator.pop(context),
             ),
+            title: Text(p?.fullName ?? 'Member',
+                style: const TextStyle(color: Colors.white, fontSize: 18,
+                    fontWeight: FontWeight.w700)),
             actions: [
               IconButton(
                 icon: const Icon(Icons.person_remove_rounded, color: Colors.white70),
@@ -162,6 +111,53 @@ class _MemberDetailScreenState extends ConsumerState<MemberDetailScreen> {
                 onPressed: _deactivate,
               ),
             ],
+            flexibleSpace: FlexibleSpaceBar(
+              background: Container(
+                decoration: const BoxDecoration(gradient: AppColors.heroGradient),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const SizedBox(height: 50),
+                    Container(
+                      width: 72,
+                      height: 72,
+                      decoration: BoxDecoration(
+                        gradient: AppColors.accentGradient,
+                        borderRadius: const BorderRadius.all(Radius.circular(22)),
+                        boxShadow: [BoxShadow(
+                          color: AppColors.accent.withValues(alpha: 0.4),
+                          blurRadius: 16, offset: const Offset(0, 6))],
+                      ),
+                      child: Center(
+                        child: Text(initials,
+                            style: const TextStyle(color: Colors.white,
+                                fontWeight: FontWeight.w800, fontSize: 28)),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(p?.fullName ?? 'Member',
+                        style: const TextStyle(color: Colors.white,
+                            fontWeight: FontWeight.w700, fontSize: 18)),
+                    const SizedBox(height: 4),
+                    if (p != null)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: AppColors.accent.withValues(alpha: 0.2),
+                          borderRadius: const BorderRadius.all(Radius.circular(20)),
+                        ),
+                        child: Text(
+                          'Member #${p.memberNumber}  •  ${p.role.toUpperCase()}',
+                          style: const TextStyle(
+                              color: AppColors.accent, fontSize: 11,
+                              fontWeight: FontWeight.w700, letterSpacing: 1),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
           ),
 
           SliverPadding(
@@ -217,33 +213,87 @@ class _MemberDetailScreenState extends ConsumerState<MemberDetailScreen> {
                             fontWeight: FontWeight.w700, fontSize: 15)),
                   ),
                 ),
-                const SizedBox(height: 16),
-                Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.statusRejected.withValues(alpha: 0.06),
-                    borderRadius: const BorderRadius.all(Radius.circular(16)),
-                    border: Border.all(
-                        color: AppColors.statusRejected.withValues(alpha: 0.2)),
-                  ),
-                  child: ListTile(
-                    leading: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: AppColors.statusRejected.withValues(alpha: 0.1),
-                        borderRadius: const BorderRadius.all(Radius.circular(10)),
+                if (ref.watch(currentProfileProvider).valueOrNull?.memberNumber == 0) ...[
+                  const SizedBox(height: 24),
+                  const _SectionLabel('Admin Access'),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: p?.role == 'admin' 
+                          ? AppColors.accent.withValues(alpha: 0.05) 
+                          : AppColors.surface,
+                      borderRadius: const BorderRadius.all(Radius.circular(20)),
+                      border: Border.all(
+                        color: p?.role == 'admin' 
+                            ? AppColors.accent.withValues(alpha: 0.3) 
+                            : const Color(0xFFEEF1F7),
                       ),
-                      child: const Icon(Icons.person_remove_rounded,
-                          color: AppColors.statusRejected, size: 20),
                     ),
-                    title: const Text('Deactivate Member',
-                        style: TextStyle(color: AppColors.statusRejected,
-                            fontWeight: FontWeight.w600)),
-                    subtitle: const Text('Remove from active members',
-                        style: TextStyle(fontSize: 12,
-                            color: AppColors.textSecondary)),
-                    onTap: _deactivate,
+                    child: SwitchListTile(
+                      activeColor: AppColors.accent,
+                      title: const Text('Admin Privileges',
+                          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                      subtitle: Text(
+                        p?.role == 'admin' 
+                            ? 'This member has full administrative access' 
+                            : 'Grant administrative access to this member',
+                        style: const TextStyle(fontSize: 11),
+                      ),
+                      value: p?.role == 'admin',
+                      onChanged: (val) async {
+                        final ok = await showConfirmationDialog(
+                          context,
+                          title: val ? 'Promote to Admin' : 'Revoke Admin Access',
+                          message: val 
+                              ? 'Are you sure you want to give administrative access to ${p?.fullName}?' 
+                              : 'Are you sure you want to remove admin access for ${p?.fullName}?',
+                          confirmLabel: val ? 'Promote' : 'Revoke',
+                        );
+                        if (ok == true) {
+                          setState(() => _saving = true);
+                          try {
+                            await ref.read(profileServiceProvider).updateProfile(
+                              userId: widget.memberId,
+                              role: val ? 'admin' : 'member',
+                            );
+                            await _load();
+                            ref.invalidate(allMembersProvider);
+                          } finally {
+                            if (mounted) setState(() => _saving = false);
+                          }
+                        }
+                      },
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 24),
+                  const _SectionLabel('Danger Zone'),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.statusRejected.withValues(alpha: 0.06),
+                      borderRadius: const BorderRadius.all(Radius.circular(16)),
+                      border: Border.all(
+                          color: AppColors.statusRejected.withValues(alpha: 0.2)),
+                    ),
+                    child: ListTile(
+                      leading: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppColors.statusRejected.withValues(alpha: 0.1),
+                          borderRadius: const BorderRadius.all(Radius.circular(10)),
+                        ),
+                        child: const Icon(Icons.person_remove_rounded,
+                            color: AppColors.statusRejected, size: 20),
+                      ),
+                      title: const Text('Deactivate Member',
+                          style: TextStyle(color: AppColors.statusRejected,
+                              fontWeight: FontWeight.w600)),
+                      subtitle: const Text('Remove from active members',
+                          style: TextStyle(fontSize: 12,
+                              color: AppColors.textSecondary)),
+                      onTap: _deactivate,
+                    ),
+                  ),
+                ],
               ]),
             ),
           ),

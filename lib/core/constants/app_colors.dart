@@ -13,6 +13,7 @@ class AppColors {
   static const Color surface = Color(0xFFFFFFFF);
   static const Color surfaceVariant = Color(0xFFF0F4FF);
   static const Color cardShadow = Color(0x1A0A1628);
+  static const Color divider = Color(0xFFEEF1F7);
 
   // Status
   static const Color statusPending = Color(0xFFFF9F43);

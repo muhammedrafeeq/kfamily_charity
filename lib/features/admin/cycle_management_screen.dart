@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/extensions/datetime_extensions.dart';
+import '../../models/payment_cycle.dart';
 import '../../providers/contribution_provider.dart';
 import '../../providers/cycle_provider.dart';
 import '../../shared/widgets/confirmation_dialog.dart';
@@ -64,7 +65,7 @@ class CycleManagementScreen extends ConsumerWidget {
                             style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
                         const SizedBox(height: 24),
                         FilledButton.icon(
-                          onPressed: () => _openCycle(context, ref),
+                          onPressed: () => _openCycle(context, ref, cycles),
                           style: FilledButton.styleFrom(
                               backgroundColor: AppColors.accent,
                               foregroundColor: AppColors.primary),
@@ -151,7 +152,7 @@ class CycleManagementScreen extends ConsumerWidget {
                                   const SizedBox(height: 3),
                                   Text(
                                     c.isOpen
-                                        ? 'Opened ${c.createdAt.toDisplayDate()}'
+                                        ? 'Deadline: ${c.endDate?.toDisplayDate() ?? 'Default (10th)'}'
                                         : 'Closed ${c.closedAt?.toDisplayDate() ?? ''}',
                                     style: const TextStyle(
                                         color: AppColors.textSecondary,
@@ -160,7 +161,12 @@ class CycleManagementScreen extends ConsumerWidget {
                                 ],
                               ),
                             ),
-                            if (c.isOpen)
+                            if (c.isOpen) ...[
+                              TextButton(
+                                onPressed: () => _extendCycle(context, ref, c),
+                                child: const Text('Extend',
+                                    style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.accent)),
+                              ),
                               TextButton(
                                 onPressed: () => _closeCycle(
                                     context, ref, c.id, c.displayName),
@@ -168,8 +174,8 @@ class CycleManagementScreen extends ConsumerWidget {
                                     foregroundColor: AppColors.statusRejected),
                                 child: const Text('Close',
                                     style: TextStyle(fontWeight: FontWeight.w600)),
-                              )
-                            else
+                              ),
+                            ] else
                               const Icon(Icons.check_circle_rounded,
                                   color: AppColors.statusApproved, size: 20),
                           ],
@@ -191,7 +197,7 @@ class CycleManagementScreen extends ConsumerWidget {
       ),
       floatingActionButton: currentAsync.valueOrNull == null
           ? FloatingActionButton.extended(
-              onPressed: () => _openCycle(context, ref),
+              onPressed: () => _openCycle(context, ref, cyclesAsync.valueOrNull),
               backgroundColor: AppColors.accent,
               foregroundColor: AppColors.primary,
               icon: const Icon(Icons.add_rounded),
@@ -202,10 +208,49 @@ class CycleManagementScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _openCycle(BuildContext context, WidgetRef ref) async {
+  Future<void> _extendCycle(BuildContext context, WidgetRef ref, PaymentCycle cycle) async {
+    final initialDate = cycle.endDate ?? DateTime(cycle.year, cycle.month, 10);
+    final newDate = await showDatePicker(
+      context: context,
+      initialDate: initialDate.isAfter(DateTime.now()) ? initialDate : DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 90)),
+      helpText: 'Extend Deadline for ${cycle.displayName}',
+    );
+
+    if (newDate != null) {
+      try {
+        final endOfDay = DateTime(newDate.year, newDate.month, newDate.day, 23, 59, 59);
+        await ref.read(cycleServiceProvider).updateCycleEndDate(cycle.id, endOfDay);
+        ref.invalidate(allCyclesProvider);
+        ref.invalidate(currentCycleProvider);
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: $e'), backgroundColor: AppColors.statusRejected),
+          );
+        }
+      }
+    }
+  }
+
+  Future<void> _openCycle(BuildContext context, WidgetRef ref, List<PaymentCycle>? existing) async {
     final now = DateTime.now();
     int selectedYear = now.year;
     int selectedMonth = now.month;
+
+    if (existing != null && existing.isNotEmpty) {
+      final last = existing.first;
+      if (last.month == 12) {
+        selectedYear = last.year + 1;
+        selectedMonth = 1;
+      } else {
+        selectedYear = last.year;
+        selectedMonth = last.month + 1;
+      }
+    }
+
+    DateTime selectedEndDate = DateTime(selectedYear, selectedMonth, 10, 23, 59, 59);
 
     final ok = await showDialog<bool>(
       context: context,
@@ -216,16 +261,16 @@ class CycleManagementScreen extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               DropdownButtonFormField<int>(
-                initialValue: selectedYear,
+                value: selectedYear,
                 decoration: const InputDecoration(labelText: 'Year'),
-                items: [now.year - 1, now.year, now.year + 1]
+                items: [now.year, now.year + 1]
                     .map((y) => DropdownMenuItem(value: y, child: Text('$y')))
                     .toList(),
                 onChanged: (v) => setState(() => selectedYear = v!),
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<int>(
-                initialValue: selectedMonth,
+                value: selectedMonth,
                 decoration: const InputDecoration(labelText: 'Month'),
                 items: List.generate(12, (i) => i + 1)
                     .map((m) => DropdownMenuItem(
@@ -234,6 +279,24 @@ class CycleManagementScreen extends ConsumerWidget {
                         ))
                     .toList(),
                 onChanged: (v) => setState(() => selectedMonth = v!),
+              ),
+              const SizedBox(height: 16),
+              InkWell(
+                onTap: () async {
+                  final d = await showDatePicker(
+                    context: ctx,
+                    initialDate: selectedEndDate,
+                    firstDate: DateTime.now(),
+                    lastDate: DateTime(selectedYear, selectedMonth + 1, 0),
+                  );
+                  if (d != null) {
+                    setState(() => selectedEndDate = DateTime(d.year, d.month, d.day, 23, 59, 59));
+                  }
+                },
+                child: InputDecorator(
+                  decoration: const InputDecoration(labelText: 'Payment Deadline'),
+                  child: Text(DateFormat('dd MMM yyyy').format(selectedEndDate)),
+                ),
               ),
             ],
           ),
@@ -252,7 +315,9 @@ class CycleManagementScreen extends ConsumerWidget {
     if (ok != true) return;
     try {
       await ref.read(cycleServiceProvider).openCycle(
-          year: selectedYear, month: selectedMonth);
+          year: selectedYear, 
+          month: selectedMonth,
+          endDate: selectedEndDate);
       ref.invalidate(allCyclesProvider);
       ref.invalidate(currentCycleProvider);
     } catch (e) {

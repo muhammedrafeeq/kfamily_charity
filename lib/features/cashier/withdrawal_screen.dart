@@ -7,6 +7,7 @@ import '../../models/profile.dart';
 import '../../providers/profile_provider.dart';
 import '../../providers/language_provider.dart';
 import '../../providers/withdrawal_provider.dart';
+import '../../shared/widgets/confirmation_dialog.dart';
 import '../../shared/widgets/error_display.dart';
 
 class WithdrawalScreen extends ConsumerStatefulWidget {
@@ -60,6 +61,29 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
     }
   }
 
+  Future<void> _clearHistory() async {
+    final ok = await showConfirmationDialog(
+      context,
+      title: 'Clear History?',
+      message: 'This will permanently delete all withdrawal records and reset the total withdrawn amount to zero. This cannot be undone.',
+      confirmLabel: 'Clear All',
+      isDestructive: true,
+    );
+    if (ok == true) {
+      setState(() => _loading = true);
+      try {
+        await ref.read(withdrawalServiceProvider).clearAllWithdrawals();
+        ref.invalidate(withdrawalsProvider);
+        ref.invalidate(totalWithdrawnProvider);
+        _snack('Withdrawal history cleared.');
+      } catch (e) {
+        _snack(e.toString(), error: true);
+      } finally {
+        if (mounted) setState(() => _loading = false);
+      }
+    }
+  }
+
   void _snack(String msg, {bool error = false}) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -80,10 +104,16 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
           // Gradient header with total
           SliverAppBar(
             pinned: true,
-            expandedHeight: 160,
-            backgroundColor: Colors.transparent,
+            expandedHeight: 180,
+            backgroundColor: AppColors.primary,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+              onPressed: () => Navigator.pop(context),
+            ),
+            title: Text(l10n.withdrawn,
+                style: const TextStyle(color: Colors.white, fontSize: 18,
+                    fontWeight: FontWeight.w700)),
             flexibleSpace: FlexibleSpaceBar(
-              collapseMode: CollapseMode.pin,
               background: Container(
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
@@ -92,36 +122,27 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
                     end: Alignment.bottomRight,
                   ),
                 ),
-                child: SafeArea(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const SizedBox(height: 20),
-                      const Text('Total Withdrawn',
-                          style: TextStyle(color: Colors.white54, fontSize: 12,
-                              fontWeight: FontWeight.w500, letterSpacing: 1)),
-                      const SizedBox(height: 6),
-                      totalAsync.when(
-                        data: (total) => Text(total.toCurrency(),
-                            style: const TextStyle(
-                                color: Colors.white, fontSize: 30,
-                                fontWeight: FontWeight.w800)),
-                        loading: () => const CircularProgressIndicator(
-                            color: Colors.white, strokeWidth: 2),
-                        error: (_, __) => const SizedBox.shrink(),
-                      ),
-                    ],
-                  ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const SizedBox(height: 40), // Push down to avoid pinned title
+                    const Text('Total Withdrawn',
+                        style: TextStyle(color: Colors.white54, fontSize: 12,
+                            fontWeight: FontWeight.w500, letterSpacing: 1)),
+                    const SizedBox(height: 6),
+                    totalAsync.when(
+                      data: (total) => Text(total.toCurrency(),
+                          style: const TextStyle(
+                              color: Colors.white, fontSize: 32,
+                              fontWeight: FontWeight.w800)),
+                      loading: () => const SizedBox(
+                          height: 20, width: 20,
+                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)),
+                      error: (_, __) => const SizedBox.shrink(),
+                    ),
+                  ],
                 ),
               ),
-              title: Text(l10n.withdrawn,
-                  style: const TextStyle(color: Colors.white, fontSize: 17,
-                      fontWeight: FontWeight.w600)),
-              titlePadding: const EdgeInsetsDirectional.fromSTEB(72, 0, 16, 16),
-            ),
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
-              onPressed: () => Navigator.pop(context),
             ),
           ),
 
@@ -204,13 +225,28 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
             ),
           ),
 
-          // History header
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 24, 16, 8),
-              child: Text(l10n.withdrawalHistory,
-                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13,
-                      color: AppColors.textSecondary, letterSpacing: 1)),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(l10n.withdrawalHistory,
+                      style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13,
+                          color: AppColors.textSecondary, letterSpacing: 1)),
+                  if (withdrawalsAsync.valueOrNull?.isNotEmpty == true &&
+                      ref.watch(currentProfileProvider).valueOrNull?.memberNumber == 0)
+                    TextButton.icon(
+                      onPressed: _loading ? null : _clearHistory,
+                      icon: const Icon(Icons.delete_sweep_rounded, size: 16),
+                      label: const Text('Clear History', style: TextStyle(fontSize: 12)),
+                      style: TextButton.styleFrom(
+                        foregroundColor: AppColors.statusRejected,
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
 

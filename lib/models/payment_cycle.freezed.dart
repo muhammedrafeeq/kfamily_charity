@@ -27,6 +27,7 @@ mixin _$PaymentCycle {
   String? get createdBy => throw _privateConstructorUsedError;
   DateTime get createdAt => throw _privateConstructorUsedError;
   DateTime? get closedAt => throw _privateConstructorUsedError;
+  DateTime? get endDate => throw _privateConstructorUsedError;
 
   /// Serializes this PaymentCycle to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -51,7 +52,8 @@ abstract class $PaymentCycleCopyWith<$Res> {
       String status,
       String? createdBy,
       DateTime createdAt,
-      DateTime? closedAt});
+      DateTime? closedAt,
+      DateTime? endDate});
 }
 
 /// @nodoc
@@ -76,6 +78,7 @@ class _$PaymentCycleCopyWithImpl<$Res, $Val extends PaymentCycle>
     Object? createdBy = freezed,
     Object? createdAt = null,
     Object? closedAt = freezed,
+    Object? endDate = freezed,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -106,6 +109,10 @@ class _$PaymentCycleCopyWithImpl<$Res, $Val extends PaymentCycle>
           ? _value.closedAt
           : closedAt // ignore: cast_nullable_to_non_nullable
               as DateTime?,
+      endDate: freezed == endDate
+          ? _value.endDate
+          : endDate // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
     ) as $Val);
   }
 }
@@ -125,7 +132,8 @@ abstract class _$$PaymentCycleImplCopyWith<$Res>
       String status,
       String? createdBy,
       DateTime createdAt,
-      DateTime? closedAt});
+      DateTime? closedAt,
+      DateTime? endDate});
 }
 
 /// @nodoc
@@ -148,6 +156,7 @@ class __$$PaymentCycleImplCopyWithImpl<$Res>
     Object? createdBy = freezed,
     Object? createdAt = null,
     Object? closedAt = freezed,
+    Object? endDate = freezed,
   }) {
     return _then(_$PaymentCycleImpl(
       id: null == id
@@ -178,6 +187,10 @@ class __$$PaymentCycleImplCopyWithImpl<$Res>
           ? _value.closedAt
           : closedAt // ignore: cast_nullable_to_non_nullable
               as DateTime?,
+      endDate: freezed == endDate
+          ? _value.endDate
+          : endDate // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
     ));
   }
 }
@@ -192,7 +205,8 @@ class _$PaymentCycleImpl extends _PaymentCycle {
       required this.status,
       this.createdBy,
       required this.createdAt,
-      this.closedAt})
+      this.closedAt,
+      this.endDate})
       : super._();
 
   factory _$PaymentCycleImpl.fromJson(Map<String, dynamic> json) =>
@@ -212,10 +226,12 @@ class _$PaymentCycleImpl extends _PaymentCycle {
   final DateTime createdAt;
   @override
   final DateTime? closedAt;
+  @override
+  final DateTime? endDate;
 
   @override
   String toString() {
-    return 'PaymentCycle(id: $id, year: $year, month: $month, status: $status, createdBy: $createdBy, createdAt: $createdAt, closedAt: $closedAt)';
+    return 'PaymentCycle(id: $id, year: $year, month: $month, status: $status, createdBy: $createdBy, createdAt: $createdAt, closedAt: $closedAt, endDate: $endDate)';
   }
 
   @override
@@ -232,13 +248,14 @@ class _$PaymentCycleImpl extends _PaymentCycle {
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.closedAt, closedAt) ||
-                other.closedAt == closedAt));
+                other.closedAt == closedAt) &&
+            (identical(other.endDate, endDate) || other.endDate == endDate));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType, id, year, month, status, createdBy, createdAt, closedAt);
+  int get hashCode => Object.hash(runtimeType, id, year, month, status,
+      createdBy, createdAt, closedAt, endDate);
 
   /// Create a copy of PaymentCycle
   /// with the given fields replaced by the non-null parameter values.
@@ -264,7 +281,8 @@ abstract class _PaymentCycle extends PaymentCycle {
       required final String status,
       final String? createdBy,
       required final DateTime createdAt,
-      final DateTime? closedAt}) = _$PaymentCycleImpl;
+      final DateTime? closedAt,
+      final DateTime? endDate}) = _$PaymentCycleImpl;
   const _PaymentCycle._() : super._();
 
   factory _PaymentCycle.fromJson(Map<String, dynamic> json) =
@@ -284,6 +302,8 @@ abstract class _PaymentCycle extends PaymentCycle {
   DateTime get createdAt;
   @override
   DateTime? get closedAt;
+  @override
+  DateTime? get endDate;
 
   /// Create a copy of PaymentCycle
   /// with the given fields replaced by the non-null parameter values.

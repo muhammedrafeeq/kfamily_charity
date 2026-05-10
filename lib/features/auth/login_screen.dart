@@ -60,20 +60,26 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.sizeOf(context);
+    final view = View.of(context);
+    final screenHeight = view.display.size.height / view.devicePixelRatio;
+
     return Scaffold(
+      backgroundColor: AppColors.background,
+      resizeToAvoidBottomInset: true,
       body: Stack(
         children: [
           // Gradient background
           Container(
-            height: size.height * 0.52,
+            height: screenHeight,
             decoration: const BoxDecoration(gradient: AppColors.heroGradient),
           ),
           // Bottom white curve
-          Align(
-            alignment: Alignment.bottomCenter,
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: screenHeight * 0.52,
             child: Container(
-              height: size.height * 0.52,
               decoration: const BoxDecoration(
                 color: AppColors.background,
                 borderRadius: BorderRadius.vertical(top: Radius.circular(36)),
@@ -235,13 +241,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                     v == null || v.isEmpty ? 'Required' : null,
                               ),
                               const SizedBox(height: 8),
-                              Align(
+                              /* Align(
                                 alignment: Alignment.centerRight,
                                 child: TextButton(
                                   onPressed: () => context.push(AppRoutes.forgotPassword),
                                   child: const Text(AppStrings.forgotPassword),
                                 ),
-                              ),
+                              ), */
                               const SizedBox(height: 8),
                               SizedBox(
                                 height: 52,

@@ -109,10 +109,11 @@ class DashboardScreen extends ConsumerWidget {
                         data: (trends) {
                           final summary =
                               trends.where((t) => t.cycleId == cycle.id).firstOrNull;
+                          final allMembers = ref.watch(allMembersProvider).valueOrNull ?? [];
+                          final total = allMembers.length;
                           final paid = summary?.paidCount ?? 0;
-                          const total = 15;
                           final collected = summary?.totalCollected ?? 0.0;
-                          final progress = paid / total;
+                          final progress = total > 0 ? paid / total : 0.0;
                           return _CycleHeroCard(
                             cycleName: cycle.displayName,
                             isOpen: cycle.isOpen,
@@ -194,11 +195,12 @@ class _CycleHeroCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        gradient: AppColors.heroGradient,
-        borderRadius: BorderRadius.all(Radius.circular(24)),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: const BorderRadius.all(Radius.circular(20)),
+        border: Border.all(color: AppColors.divider),
       ),
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -207,80 +209,66 @@ class _CycleHeroCard extends StatelessWidget {
               Expanded(
                 child: Text(cycleName,
                     style: const TextStyle(
-                        color: Colors.white, fontWeight: FontWeight.w700, fontSize: 18)),
+                        color: AppColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 15)),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
                   color: isOpen
-                      ? AppColors.accent.withValues(alpha: 0.2)
-                      : Colors.white.withValues(alpha: 0.1),
-                  borderRadius: const BorderRadius.all(Radius.circular(20)),
-                  border: Border.all(
-                    color: isOpen
-                        ? AppColors.accent.withValues(alpha: 0.6)
-                        : Colors.white.withValues(alpha: 0.2),
-                  ),
+                      ? AppColors.accent.withValues(alpha: 0.1)
+                      : Colors.grey.withValues(alpha: 0.1),
+                  borderRadius: const BorderRadius.all(Radius.circular(12)),
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 6,
-                      height: 6,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: isOpen ? AppColors.accent : Colors.grey.shade400,
-                      ),
-                    ),
-                    const SizedBox(width: 5),
-                    Text(
-                      isOpen ? 'OPEN' : 'CLOSED',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        color: isOpen ? AppColors.accent : Colors.grey.shade400,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  isOpen ? 'OPEN' : 'CLOSED',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                    color: isOpen ? AppColors.accent : Colors.grey.shade400,
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 20),
-          Text(
-            collected.toCurrency(),
-            style: const TextStyle(
-                color: Colors.white, fontSize: 36, fontWeight: FontWeight.w800),
+          const SizedBox(height: 12),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                collected.toCurrency(),
+                style: const TextStyle(
+                    color: AppColors.primary, fontSize: 24, fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(width: 8),
+              const Padding(
+                padding: EdgeInsets.only(bottom: 4),
+                child: Text('this month',
+                    style: TextStyle(color: AppColors.textSecondary, fontSize: 11)),
+              ),
+            ],
           ),
-          const Text('Total Collected',
-              style: TextStyle(color: AppColors.textOnDarkSub, fontSize: 13)),
-          const SizedBox(height: 20),
-          // Progress bar
+          const SizedBox(height: 12),
+          // Slim progress bar
           ClipRRect(
-            borderRadius: const BorderRadius.all(Radius.circular(6)),
+            borderRadius: const BorderRadius.all(Radius.circular(4)),
             child: LinearProgressIndicator(
               value: progress,
-              minHeight: 8,
-              backgroundColor: Colors.white.withValues(alpha: 0.15),
+              minHeight: 6,
+              backgroundColor: AppColors.divider,
               valueColor: const AlwaysStoppedAnimation(AppColors.accent),
             ),
           ),
-          const SizedBox(height: 10),
-          Text(
-            '$paid of $total members paid  ·  ${(progress * 100).toStringAsFixed(0)}%',
-            style: const TextStyle(color: AppColors.textOnDarkSub, fontSize: 12),
-          ),
-          const SizedBox(height: 20),
-          // Stat row
+          const SizedBox(height: 8),
           Row(
             children: [
-              _StatPill(label: 'Paid', value: '$paid', color: AppColors.statusApproved),
-              const SizedBox(width: 8),
-              _StatPill(label: 'Pending', value: '$pending', color: AppColors.statusPending),
-              const SizedBox(width: 8),
-              _StatPill(label: 'Rejected', value: '$rejected', color: AppColors.statusRejected),
+              Text(
+                '$paid paid',
+                style: const TextStyle(color: AppColors.statusApproved, fontSize: 11, fontWeight: FontWeight.w600),
+              ),
+              Text(
+                '  ·  $pending pending  ·  ${(progress * 100).toStringAsFixed(0)}%',
+                style: const TextStyle(color: AppColors.textSecondary, fontSize: 11),
+              ),
             ],
           ),
         ],
@@ -557,10 +545,10 @@ class _TotalsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final balance = totalCollected - totalWithdrawn;
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(28),
       decoration: const BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.all(Radius.circular(20)),
+        gradient: AppColors.heroGradient,
+        borderRadius: BorderRadius.all(Radius.circular(24)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -570,44 +558,44 @@ class _TotalsCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppColors.gold.withValues(alpha: 0.12),
+                  color: Colors.white.withValues(alpha: 0.15),
                   borderRadius: const BorderRadius.all(Radius.circular(10)),
                 ),
                 child: const Icon(Icons.account_balance_rounded,
-                    color: AppColors.gold, size: 20),
+                    color: Colors.white, size: 20),
               ),
               const SizedBox(width: 12),
               Text(l10n.fundOverview,
-                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                  style: const TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.w600, fontSize: 16)),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
+          Text(
+            balance.toCurrency(),
+            style: const TextStyle(
+                color: Colors.white, fontSize: 40, fontWeight: FontWeight.w800),
+          ),
+          const Text('Available Fund Balance',
+              style: TextStyle(color: AppColors.textOnDarkSub, fontSize: 13)),
+          const SizedBox(height: 28),
           Row(
             children: [
               Expanded(
                 child: _OverviewStat(
                   label: l10n.totalCollected,
                   value: totalCollected.toCurrency(),
-                  color: AppColors.statusApproved,
+                  color: Colors.white,
                   icon: Icons.arrow_downward_rounded,
                 ),
               ),
-              Container(width: 1, height: 48, color: const Color(0xFFEEF1F7)),
+              Container(width: 1, height: 40, color: Colors.white.withValues(alpha: 0.2)),
               Expanded(
                 child: _OverviewStat(
                   label: l10n.withdrawn,
                   value: totalWithdrawn.toCurrency(),
-                  color: AppColors.statusRejected,
+                  color: Colors.white.withValues(alpha: 0.9),
                   icon: Icons.arrow_upward_rounded,
-                ),
-              ),
-              Container(width: 1, height: 48, color: const Color(0xFFEEF1F7)),
-              Expanded(
-                child: _OverviewStat(
-                  label: l10n.balance,
-                  value: balance.toCurrency(),
-                  color: balance >= 0 ? AppColors.accent : AppColors.statusRejected,
-                  icon: Icons.account_balance_wallet_rounded,
                 ),
               ),
             ],
@@ -632,14 +620,18 @@ class _OverviewStat extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Icon(icon, color: color, size: 16),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: color.withValues(alpha: 0.7), size: 14),
+            const SizedBox(width: 4),
+            Text(label,
+                style: TextStyle(color: color.withValues(alpha: 0.7), fontSize: 11)),
+          ],
+        ),
         const SizedBox(height: 4),
         Text(value,
-            style: TextStyle(fontWeight: FontWeight.w700, color: color, fontSize: 13),
-            textAlign: TextAlign.center),
-        const SizedBox(height: 2),
-        Text(label,
-            style: const TextStyle(color: AppColors.textSecondary, fontSize: 10),
+            style: TextStyle(fontWeight: FontWeight.w700, color: color, fontSize: 15),
             textAlign: TextAlign.center),
       ],
     );

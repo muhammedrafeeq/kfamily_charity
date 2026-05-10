@@ -50,4 +50,12 @@ class WithdrawalService {
       throw DatabaseException('Failed to add withdrawal: $e');
     }
   }
+
+  Future<void> clearAllWithdrawals() async {
+    try {
+      await _client.from('withdrawals').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+    } catch (e) {
+      throw DatabaseException('Failed to clear withdrawals: $e');
+    }
+  }
 }

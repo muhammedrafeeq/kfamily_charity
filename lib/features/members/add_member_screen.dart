@@ -22,6 +22,26 @@ class _AddMemberScreenState extends ConsumerState<AddMemberScreen> {
   String? _error;
 
   @override
+  void initState() {
+    super.initState();
+    _preFillNextMemberNumber();
+  }
+
+  void _preFillNextMemberNumber() {
+    // We can't use ref in initState directly for watching, so we use listen/read
+    // or wait for the build to happen. Here we read the current value if available.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final members = ref.read(allMembersProvider).valueOrNull ?? [];
+      if (members.isNotEmpty) {
+        final maxNum = members.map((m) => m.memberNumber).reduce((a, b) => a > b ? a : b);
+        _numberCtrl.text = (maxNum + 1).toString();
+      } else {
+        _numberCtrl.text = '1';
+      }
+    });
+  }
+
+  @override
   void dispose() {
     _nameCtrl.dispose();
     _phoneCtrl.dispose();
@@ -71,38 +91,34 @@ class _AddMemberScreenState extends ConsumerState<AddMemberScreen> {
         slivers: [
           SliverAppBar(
             pinned: true,
-            expandedHeight: 160,
-            backgroundColor: Colors.transparent,
-            flexibleSpace: FlexibleSpaceBar(
-              collapseMode: CollapseMode.pin,
-              background: Container(
-                decoration: const BoxDecoration(gradient: AppColors.heroGradient),
-                child: SafeArea(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SizedBox(height: 24),
-                      Icon(Icons.person_add_rounded,
-                          color: AppColors.accent, size: 36),
-                      SizedBox(height: 8),
-                      Text(l10n.inviteNewMember,
-                          style: const TextStyle(color: Colors.white,
-                              fontSize: 20, fontWeight: FontWeight.w700)),
-                      SizedBox(height: 4),
-                      Text('Enter member details to create account',
-                          style: TextStyle(color: Colors.white54, fontSize: 13)),
-                    ],
-                  ),
-                ),
-              ),
-              title: Text(l10n.addMember,
-                  style: const TextStyle(color: Colors.white, fontSize: 17,
-                      fontWeight: FontWeight.w600)),
-              titlePadding: const EdgeInsetsDirectional.fromSTEB(72, 0, 16, 16),
-            ),
+            expandedHeight: 180,
+            backgroundColor: AppColors.primary,
             leading: IconButton(
               icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
               onPressed: () => Navigator.pop(context),
+            ),
+            title: Text(l10n.addMember,
+                style: const TextStyle(color: Colors.white, fontSize: 18,
+                    fontWeight: FontWeight.w700)),
+            flexibleSpace: FlexibleSpaceBar(
+              background: Container(
+                decoration: const BoxDecoration(gradient: AppColors.heroGradient),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const SizedBox(height: 40),
+                    const Icon(Icons.person_add_rounded,
+                        color: AppColors.accent, size: 36),
+                    const SizedBox(height: 10),
+                    Text(l10n.inviteNewMember,
+                        style: const TextStyle(color: Colors.white,
+                            fontSize: 20, fontWeight: FontWeight.w700)),
+                    const SizedBox(height: 4),
+                    const Text('Create a new member account',
+                        style: TextStyle(color: Colors.white54, fontSize: 12)),
+                  ],
+                ),
+              ),
             ),
           ),
 

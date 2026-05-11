@@ -61,24 +61,31 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   @override
   Widget build(BuildContext context) {
     final view = View.of(context);
-    final screenHeight = view.display.size.height / view.devicePixelRatio;
+    // Use the actual physical screen height to prevent background resizing
+    final displayHeight = MediaQuery.sizeOf(context).height;
 
     return Scaffold(
       backgroundColor: AppColors.surface,
-      resizeToAvoidBottomInset: false,
+      resizeToAvoidBottomInset: true, // Allow content to move, but background stays fixed
       body: Stack(
         children: [
-          // Gradient background
+          // 1. Static Base Color
+          Positioned.fill(child: Container(color: AppColors.surface)),
+          
+          // 2. Fixed Gradient Header - Pinned to top, ignores keyboard
           Positioned(
             top: 0,
             left: 0,
             right: 0,
-            height: MediaQuery.sizeOf(context).height * 0.7,
-            child: Container(
-              decoration: const BoxDecoration(gradient: AppColors.heroGradient),
+            height: displayHeight * 0.75, // Slightly taller to cover any bounce
+            child: IgnorePointer(
+              child: Container(
+                decoration: const BoxDecoration(gradient: AppColors.heroGradient),
+              ),
             ),
           ),
-          // ... circles ...
+          
+          // 3. Decorative circles
           Positioned(
             top: -60,
             right: -60,
@@ -103,18 +110,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
               ),
             ),
           ),
-          // Content
-          FadeTransition(
-            opacity: _fadeAnim,
-            child: SlideTransition(
-              position: _slideAnim,
-              child: SingleChildScrollView(
-                physics: const ClampingScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 28),
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    minHeight: MediaQuery.sizeOf(context).height,
-                  ),
+
+          // 4. Content Layer
+          Positioned.fill(
+            child: FadeTransition(
+              opacity: _fadeAnim,
+              child: SlideTransition(
+                position: _slideAnim,
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(horizontal: 28),
                   child: Column(
                     children: [
                       const SizedBox(height: 60),

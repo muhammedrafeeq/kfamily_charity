@@ -378,9 +378,12 @@ class _WhatsAppShareDialogState extends State<_WhatsAppShareDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      backgroundColor: AppColors.background,
+      backgroundColor: colorScheme.surface,
       child: Container(
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -398,30 +401,30 @@ class _WhatsAppShareDialogState extends State<_WhatsAppShareDialog> {
                   child: const Icon(Icons.chat_bubble_outline_rounded, color: Colors.white, size: 20),
                 ),
                 const SizedBox(width: 12),
-                const Expanded(
+                Expanded(
                   child: Text(
                     'WhatsApp Export',
                     style: TextStyle(
                       fontWeight: FontWeight.w700,
                       fontSize: 18,
-                      color: AppColors.textPrimary,
+                      color: colorScheme.onSurface,
                     ),
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.close_rounded, color: AppColors.textSecondary),
+                  icon: Icon(Icons.close_rounded, color: colorScheme.onSurfaceVariant),
                   onPressed: () => Navigator.pop(context),
                   visualDensity: VisualDensity.compact,
                 ),
               ],
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'Preview Formatted Message:',
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textSecondary,
+                color: colorScheme.onSurfaceVariant,
               ),
             ),
             const SizedBox(height: 8),
@@ -429,18 +432,21 @@ class _WhatsAppShareDialogState extends State<_WhatsAppShareDialog> {
               height: 250,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.surface,
+                color: colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFE0E7F0), width: 1),
+                border: Border.all(
+                  color: colorScheme.outline.withOpacity(0.3),
+                  width: 1,
+                ),
               ),
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
                 child: SelectableText(
                   widget.shareText,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'monospace',
                     fontSize: 13,
-                    color: AppColors.textPrimary,
+                    color: colorScheme.onSurface,
                   ),
                 ),
               ),
@@ -451,8 +457,8 @@ class _WhatsAppShareDialogState extends State<_WhatsAppShareDialog> {
                 Expanded(
                   child: OutlinedButton.icon(
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.textSecondary,
-                      side: const BorderSide(color: Color(0xFFD8DFEA), width: 1.5),
+                      foregroundColor: colorScheme.onSurfaceVariant,
+                      side: BorderSide(color: colorScheme.outline.withOpacity(0.5), width: 1.5),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       padding: const EdgeInsets.symmetric(vertical: 14),
                     ),

@@ -110,17 +110,20 @@ class DashboardScreen extends ConsumerWidget {
                           final summary =
                               trends.where((t) => t.cycleId == cycle.id).firstOrNull;
                           final allMembers = ref.watch(allMembersProvider).valueOrNull ?? [];
-                          final total = allMembers.length;
+                          final total = allMembers.isNotEmpty
+                              ? allMembers.length
+                              : (summary?.totalMembers ?? 0);
                           final paid = summary?.paidCount ?? 0;
+                          final pending = summary?.pendingCount ?? (total - paid).clamp(0, total);
                           final collected = summary?.totalCollected ?? 0.0;
-                          final progress = total > 0 ? paid / total : 0.0;
+                          final progress = total > 0 ? (paid / total).clamp(0.0, 1.0) : 0.0;
                           return _CycleHeroCard(
                             cycleName: cycle.displayName,
                             isOpen: cycle.isOpen,
                             collected: collected,
                             paid: paid,
                             total: total,
-                            pending: total - paid,
+                            pending: pending,
                             rejected: summary?.rejectedCount ?? 0,
                             progress: progress,
                           );

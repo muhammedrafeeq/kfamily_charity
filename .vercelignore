@@ -14,6 +14,26 @@ windows/
 lib/
 test/
 
-# Ignore intermediate build folders but KEEP the compiled web output
-build/*
-!build/web/
+# Specific large folders in build/ to ignore
+build/.cxx/
+build/3650883d0fd7148b96fb6d774395c86f/
+build/app/
+build/app_links/
+build/connectivity_plus/
+build/flutter_assets/
+build/flutter_image_compress_common/
+build/flutter_plugin_android_lifecycle/
+build/image_picker_android/
+build/jni/
+build/jni_flutter/
+build/native_assets/
+build/native_hooks/
+build/permission_handler_android/
+build/reports/
+build/share_plus/
+build/shared_preferences_android/
+build/sqflite_android/
+build/url_launcher_android/
+
+# Ignore large intermediate dill caches
+build/*.dill

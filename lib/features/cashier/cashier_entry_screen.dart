@@ -20,6 +20,7 @@ class _CashierEntryScreenState extends ConsumerState<CashierEntryScreen> {
   final Map<String, TextEditingController> _amountCtrls = {};
   final Set<String> _selected = {};
   bool _loading = false;
+  bool _showPaid = false;
   String? _sameAmount;
   final _sameAmountCtrl = TextEditingController();
 
@@ -225,21 +226,52 @@ class _CashierEntryScreenState extends ConsumerState<CashierEntryScreen> {
             ),
           ),
 
+          // Show Paid Toggle Bar
+          Container(
+            color: AppColors.surface,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            child: Row(
+              children: [
+                const Icon(Icons.filter_list_rounded, size: 20, color: AppColors.textSecondary),
+                const SizedBox(width: 8),
+                const Text(
+                  'Show already paid members',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const Spacer(),
+                Switch.adaptive(
+                  value: _showPaid,
+                  activeColor: AppColors.accent,
+                  onChanged: (val) => setState(() => _showPaid = val),
+                ),
+              ],
+            ),
+          ),
+
           const Divider(height: 1),
 
           Expanded(
             child: membersAsync.when(
               data: (members) {
-                final unpaidMembers = members.where((m) => !paidMemberIds.contains(m.id)).toList();
+                final filteredMembers = members.where((m) => _showPaid || !paidMemberIds.contains(m.id)).toList();
                 return ListView.builder(
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
-                  itemCount: unpaidMembers.length,
-                  itemBuilder: (_, i) => _MemberEntryTile(
-                    member: unpaidMembers[i],
-                    selected: _selected.contains(unpaidMembers[i].id),
-                    controller: _amountCtrls[unpaidMembers[i].id],
-                    onToggle: () => _toggleMember(unpaidMembers[i].id),
-                  ),
+                  itemCount: filteredMembers.length,
+                  itemBuilder: (_, i) {
+                    final member = filteredMembers[i];
+                    final isPaid = paidMemberIds.contains(member.id);
+                    return _MemberEntryTile(
+                      member: member,
+                      selected: _selected.contains(member.id),
+                      isPaid: isPaid,
+                      controller: _amountCtrls[member.id],
+                      onToggle: () => _toggleMember(member.id),
+                    );
+                  },
                 );
               },
               loading: () =>
@@ -312,12 +344,14 @@ class _StatChip extends StatelessWidget {
 class _MemberEntryTile extends StatelessWidget {
   final Profile member;
   final bool selected;
+  final bool isPaid;
   final TextEditingController? controller;
   final VoidCallback onToggle;
 
   const _MemberEntryTile({
     required this.member,
     required this.selected,
+    required this.isPaid,
     required this.controller,
     required this.onToggle,
   });
@@ -331,10 +365,14 @@ class _MemberEntryTile extends StatelessWidget {
         margin: const EdgeInsets.symmetric(vertical: 4),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
-          color: selected ? AppColors.accent.withValues(alpha: 0.08) : AppColors.surface,
+          color: selected 
+              ? AppColors.accent.withValues(alpha: 0.08) 
+              : (isPaid ? AppColors.statusApproved.withValues(alpha: 0.02) : AppColors.surface),
           borderRadius: const BorderRadius.all(Radius.circular(14)),
           border: Border.all(
-            color: selected ? AppColors.accent : const Color(0xFFEEF1F7),
+            color: selected 
+                ? AppColors.accent 
+                : (isPaid ? AppColors.statusApproved.withValues(alpha: 0.15) : const Color(0xFFEEF1F7)),
             width: selected ? 1.5 : 1,
           ),
         ),
@@ -345,7 +383,9 @@ class _MemberEntryTile extends StatelessWidget {
               height: 38,
               decoration: BoxDecoration(
                 gradient: selected ? AppColors.accentGradient : null,
-                color: selected ? null : AppColors.surfaceVariant,
+                color: selected 
+                    ? null 
+                    : (isPaid ? AppColors.statusApproved.withValues(alpha: 0.1) : AppColors.surfaceVariant),
                 borderRadius: const BorderRadius.all(Radius.circular(10)),
               ),
               child: Center(
@@ -353,18 +393,47 @@ class _MemberEntryTile extends StatelessWidget {
                     style: TextStyle(
                       fontWeight: FontWeight.w700,
                       fontSize: 14,
-                      color: selected ? Colors.white : AppColors.textSecondary,
+                      color: selected 
+                          ? Colors.white 
+                          : (isPaid ? AppColors.statusApproved : AppColors.textSecondary),
                     )),
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: Text(member.fullName,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
-                    color: selected ? AppColors.primary : AppColors.textPrimary,
-                  )),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(member.fullName,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                        color: selected ? AppColors.primary : AppColors.textPrimary,
+                      )),
+                  if (isPaid) ...[
+                    const SizedBox(height: 2),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.check_circle_outline_rounded,
+                          color: AppColors.statusApproved.withValues(alpha: 0.8),
+                          size: 11,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Approved Payment',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.statusApproved.withValues(alpha: 0.8),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
+              ),
             ),
             if (selected && controller != null) ...[
               const SizedBox(width: 8),
@@ -385,8 +454,12 @@ class _MemberEntryTile extends StatelessWidget {
               ),
             ] else
               Icon(
-                selected ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
-                color: selected ? AppColors.accent : AppColors.textHint,
+                selected 
+                    ? Icons.check_circle_rounded 
+                    : (isPaid ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded),
+                color: selected 
+                    ? AppColors.accent 
+                    : (isPaid ? AppColors.statusApproved.withValues(alpha: 0.7) : AppColors.textHint),
                 size: 22,
               ),
           ],

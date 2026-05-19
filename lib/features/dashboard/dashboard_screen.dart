@@ -114,7 +114,7 @@ class DashboardScreen extends ConsumerWidget {
                               ? allMembers.length
                               : (summary?.totalMembers ?? 0);
                           final paid = summary?.paidCount ?? 0;
-                          final pending = summary?.pendingCount ?? (total - paid).clamp(0, total);
+                          final pending = (total - paid).clamp(0, total);
                           final collected = summary?.totalCollected ?? 0.0;
                           final progress = total > 0 ? (paid / total).clamp(0.0, 1.0) : 0.0;
                           return _CycleHeroCard(

@@ -61,23 +61,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   @override
   Widget build(BuildContext context) {
     final view = View.of(context);
-    // Use the actual physical screen height to prevent background resizing
-    final displayHeight = MediaQuery.sizeOf(context).height;
+    // Use the actual physical screen height to prevent background resizing when keyboard pops up
+    final displayHeight = view.physicalSize.height / view.devicePixelRatio;
+    final isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
 
     return Scaffold(
-      backgroundColor: AppColors.surface,
+      backgroundColor: AppColors.primary,
       resizeToAvoidBottomInset: true, // Allow content to move, but background stays fixed
       body: Stack(
         children: [
           // 1. Static Base Color
-          Positioned.fill(child: Container(color: AppColors.surface)),
+          Positioned.fill(child: Container(color: AppColors.primary)),
           
-          // 2. Fixed Gradient Header - Pinned to top, ignores keyboard
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            height: displayHeight * 0.75, // Slightly taller to cover any bounce
+          // 2. Fixed Gradient Background - Covers 100% of the screen height
+          Positioned.fill(
             child: IgnorePointer(
               child: Container(
                 decoration: const BoxDecoration(gradient: AppColors.heroGradient),
@@ -117,62 +114,73 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
               opacity: _fadeAnim,
               child: SlideTransition(
                 position: _slideAnim,
-                child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.symmetric(horizontal: 28),
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 60),
-                      // Logo
-                      Container(
-                        width: 80,
-                        height: 80,
-                        decoration: BoxDecoration(
-                          gradient: AppColors.accentGradient,
-                          borderRadius: BorderRadius.circular(24),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.accent.withValues(alpha: 0.4),
-                              blurRadius: 24,
-                              offset: const Offset(0, 8),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    return SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 28),
+                        constraints: BoxConstraints(
+                          minHeight: constraints.maxHeight,
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(height: isKeyboardOpen ? 12 : 40),
+                            // Logo
+                            AnimatedContainer(
+                              duration: const Duration(milliseconds: 250),
+                              width: isKeyboardOpen ? 44 : 80,
+                              height: isKeyboardOpen ? 44 : 80,
+                              decoration: BoxDecoration(
+                                gradient: AppColors.accentGradient,
+                                borderRadius: BorderRadius.circular(isKeyboardOpen ? 14 : 24),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppColors.accent.withValues(alpha: 0.4),
+                                    blurRadius: isKeyboardOpen ? 12 : 24,
+                                    offset: Offset(0, isKeyboardOpen ? 4 : 8),
+                                  ),
+                                ],
+                              ),
+                              child: Icon(Icons.volunteer_activism_rounded,
+                                  size: isKeyboardOpen ? 22 : 40, color: Colors.white),
                             ),
-                          ],
-                        ),
-                        child: const Icon(Icons.volunteer_activism_rounded,
-                            size: 40, color: Colors.white),
-                      ),
-                      const SizedBox(height: 20),
-                      Text(
-                        AppStrings.appName,
-                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        'Family Charity Fund',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppColors.textOnDarkSub,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                      const SizedBox(height: 48),
-                      // Login Card
-                      Container(
-                        padding: const EdgeInsets.all(28),
-                        margin: const EdgeInsets.only(bottom: 40),
-                        decoration: const BoxDecoration(
-                          color: AppColors.surface,
-                          borderRadius: BorderRadius.all(Radius.circular(28)),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.cardShadow,
-                              blurRadius: 40,
-                              offset: Offset(0, 12),
+                            SizedBox(height: isKeyboardOpen ? 8 : 20),
+                            Text(
+                              AppStrings.appName,
+                              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
+                                fontSize: isKeyboardOpen ? 20 : null,
+                              ),
                             ),
-                          ],
-                        ),
+                            if (!isKeyboardOpen) ...[
+                              const SizedBox(height: 6),
+                              Text(
+                                'Family Charity Fund',
+                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                  color: AppColors.textOnDarkSub,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ],
+                            SizedBox(height: isKeyboardOpen ? 12 : 36),
+                            // Login Card
+                            Container(
+                              padding: const EdgeInsets.all(28),
+                              margin: const EdgeInsets.only(bottom: 24),
+                              decoration: const BoxDecoration(
+                                color: AppColors.surface,
+                                borderRadius: BorderRadius.all(Radius.circular(28)),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppColors.cardShadow,
+                                    blurRadius: 40,
+                                    offset: Offset(0, 12),
+                                  ),
+                                ],
+                              ),
                         child: Form(
                           key: _formKey,
                           child: Column(
@@ -280,10 +288,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                     ],
                   ),
                 ),
-              ),
-            ),
+              );
+            },
           ),
-        ],
+        ),
+      ),
+    ),
+],
       ),
     );
   }

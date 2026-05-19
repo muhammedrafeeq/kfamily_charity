@@ -1,0 +1,19 @@
+# Ignore all local build caches, compiler metadata, and version control
+.dart_tool/
+.git/
+.github/
+.idea/
+.vscode/
+
+# Ignore native mobile/desktop platforms (not needed for Web hosting)
+android/
+ios/
+linux/
+macos/
+windows/
+lib/
+test/
+
+# Ignore intermediate build folders but KEEP the compiled web output
+build/*
+!build/web/
